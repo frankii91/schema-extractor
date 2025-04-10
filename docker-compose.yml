@@ -1,0 +1,11 @@
+version: '3'
+services:
+  schema-extractor:
+    image: node:18-alpine
+    container_name: schema-extractor
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    command: sh -c "npm install express body-parser microdata-node cheerio && node index.js"
+    ports:
+      - "8080:8080"
