@@ -3,44 +3,47 @@ const metadata = require('html-metadata');
 
 const app = express();
 
-// Obsługa obu formatów: JSON oraz tekstu (dla n8n streamów)
+// Obsługuje JSON i tekst (dla różnych formatów wysyłanych przez n8n)
 app.use(express.json({ type: 'application/json' }));
 app.use(express.text({ type: ['text/*', '*/*'] }));
 
 app.post('/extract', async (req, res) => {
-  console.log('--- Żądanie odebrane ---');
+  console.log('--- ŻĄDANIE ODEBRANE ---');
   console.log('Content-Type:', req.headers['content-type']);
-  console.log('BODY RAW:', req.body);
+  console.log('REQ.BODY TYPE:', typeof req.body);
+  console.log('REQ.BODY:', req.body);
 
-  let url;
+  let url = null;
 
   try {
     if (typeof req.body === 'string') {
-      // Body jako string - parsujemy JSON ręcznie
+      console.log('🔍 Parsujemy BODY jako string...');
       const parsed = JSON.parse(req.body);
+      console.log('✅ JSON sparsowany:', parsed);
       url = parsed.url;
-    } else if (typeof req.body === 'object' && req.body.url) {
-      // Body jako obiekt JSON
+    } else if (typeof req.body === 'object') {
+      console.log('🔍 Odczytujemy BODY jako obiekt JSON...');
       url = req.body.url;
     }
 
-    if (!url || typeof url !== 'string') {
-      console.warn('⚠️ Brakuje poprawnego pola "url"');
+    console.log('📌 Wyciągnięty URL:', url);
+
+    if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+      console.warn('❗ Błędny lub pusty URL:', url);
       return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
     }
 
-    console.log('➡️ Pobieranie danych z URL:', url);
+    console.log('🌐 Wywołujemy html-metadata dla:', url);
     const result = await metadata(url);
-    console.log('✅ Sukces! Metadane zwrócone.');
+    console.log('✅ Metadane pobrane poprawnie!');
     res.json(result);
-
   } catch (err) {
-    console.error('❌ Błąd przetwarzania:', err);
-    res.status(500).json({ error: String(err) });
+    console.error('❌ BŁĄD:', err);
+    res.status(500).json({ error: err.message || String(err) });
   }
 });
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
-  console.log(`✅ Schema extractor 2 (html-metadata) działa na porcie ${port}`);
+  console.log(`✅ Serwis schema-extractor działa na porcie ${port}`);
 });
