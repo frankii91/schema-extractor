@@ -2,26 +2,38 @@ const express = require('express');
 const metadata = require('html-metadata');
 
 const app = express();
-app.use(express.text({ type: '*/*' }));
+
+// Obsługa obu formatów: JSON oraz tekstu (dla n8n streamów)
+app.use(express.json({ type: 'application/json' }));
+app.use(express.text({ type: ['text/*', '*/*'] }));
 
 app.post('/extract', async (req, res) => {
   console.log('--- Żądanie odebrane ---');
-  console.log('RAW BODY:', req.body);
+  console.log('Content-Type:', req.headers['content-type']);
+  console.log('BODY RAW:', req.body);
+
+  let url;
 
   try {
-    const parsed = JSON.parse(req.body);
-    const url = parsed.url;
+    if (typeof req.body === 'string') {
+      // Body jako string - parsujemy JSON ręcznie
+      const parsed = JSON.parse(req.body);
+      url = parsed.url;
+    } else if (typeof req.body === 'object' && req.body.url) {
+      // Body jako obiekt JSON
+      url = req.body.url;
+    }
 
     if (!url || typeof url !== 'string') {
-      console.warn('❗ Niepoprawny URL:', url);
+      console.warn('⚠️ Brakuje poprawnego pola "url"');
       return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
     }
 
-    console.log('➡️ Pobieranie metadanych z URL:', url);
+    console.log('➡️ Pobieranie danych z URL:', url);
     const result = await metadata(url);
-    console.log('✅ Metadane pobrane');
-
+    console.log('✅ Sukces! Metadane zwrócone.');
     res.json(result);
+
   } catch (err) {
     console.error('❌ Błąd przetwarzania:', err.message);
     res.status(500).json({ error: err.message });
