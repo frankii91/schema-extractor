@@ -35,12 +35,12 @@ app.post('/extract', async (req, res) => {
     res.json(result);
 
   } catch (err) {
-    console.error('❌ Błąd przetwarzania:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('❌ Błąd przetwarzania:', err);
+    res.status(500).json({ error: String(err) });
   }
 });
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
-  console.log(`✅ Schema extractor (html-metadata) działa na porcie ${port}`);
+  console.log(`✅ Schema extractor 2 (html-metadata) działa na porcie ${port}`);
 });
