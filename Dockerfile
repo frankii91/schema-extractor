@@ -2,9 +2,11 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# kopiujemy pliki: index.js i package.json
 COPY . .
 
-RUN npm install express body-parser microdata-node cheerio
+# instalujemy wszystko z package.json
+RUN npm install
 
 EXPOSE 8080
 
