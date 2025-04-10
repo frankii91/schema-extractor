@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "express": "^5.1.0",
-    "html-metadata": "^3.0"
+    "html-metadata": "^3.0",
+    "express": "^5.1.0",
+
   }
 }
