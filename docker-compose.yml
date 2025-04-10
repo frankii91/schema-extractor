@@ -5,3 +5,10 @@ services:
     container_name: schema-extractor
     ports:
       - "8081:8080"
+    networks:
+      - n8n_default 
+    restart: unless-stopped
+
+networks:
+  n8n_default:
+    external: true 
