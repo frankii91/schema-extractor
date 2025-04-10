@@ -1,56 +1,46 @@
-const express = require('express');
-const got = require('got');
-const cheerio = require('cheerio');
-const { parseDublinCore, parseOpenGraph, parseMicrodata } = require('html-metadata');
+import express from 'express';
+import { parseDublinCore, parseOpenGraph, parseMicrodata } from 'html-metadata';
+import cheerio from 'cheerio';
 
 const app = express();
-
-app.use(express.json({ type: 'application/json' }));
-app.use(express.text({ type: ['text/*', '*/*'] }));
+app.use(express.json());
 
 app.post('/extract', async (req, res) => {
-  console.log('--- Żądanie odebrane ---');
-  console.log('Body:', req.body);
+  console.log('--- ŻĄDANIE ODEBRANE ---');
+  console.log('Typ danych:', req.headers['content-type']);
+  console.log('Ciało żądania:', req.body);
 
-  let url = null;
+  const url = req.body?.url;
+
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+    console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
+    return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
+  }
 
   try {
-    if (typeof req.body === 'string') {
-      const parsed = JSON.parse(req.body);
-      url = parsed.url;
-    } else if (typeof req.body === 'object') {
-      url = req.body.url;
-    }
+    console.log('🌐 Pobieram stronę:', url);
+    const response = await fetch(url);
+    const html = await response.text();
 
-    if (!url || typeof url !== 'string' || !url.startsWith('http')) {
-      console.warn('❗ Niepoprawny URL:', url);
-      return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
-    }
+    console.log('📄 Długość HTML:', html.length);
+    const $ = cheerio.load(html);
 
-    console.log('➡️ Pobieranie HTML z:', url);
-    const response = await got(url);
-    const $ = cheerio.load(response.body);
-
-    console.log('🔍 Parsowanie metadanych...');
+    console.log('🔍 Parsuję metadane: DublinCore, OpenGraph, Microdata...');
     const [dc, og, micro] = await Promise.all([
       parseDublinCore($),
       parseOpenGraph($),
       parseMicrodata($)
     ]);
 
-    res.json({
-      dublinCore: dc,
-      opengraph: og,
-      microdata: micro
-    });
-
+    console.log('✅ Parsowanie zakończone pomyślnie!');
+    res.json({ dublinCore: dc, opengraph: og, microdata: micro });
   } catch (err) {
-    console.error('❌ Błąd:', err);
+    console.error('❌ Błąd podczas przetwarzania:', err);
     res.status(500).json({ error: err.message || String(err) });
   }
 });
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
-  console.log(`✅ Mikroserwis metadata-parser działa na porcie ${port}`);
+  console.log(`✅ Serwis metadata-parser działa na porcie ${port}`);
 });
