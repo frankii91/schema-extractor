@@ -1,0 +1,14 @@
+{
+  "name": "schema-extractor",
+  "version": "1.0.0",
+  "description": "Extractor of JSON-LD and microdata using html-metadata-parser",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
+    "html-metadata-parser": "^1.0.1"
+  }
+}
