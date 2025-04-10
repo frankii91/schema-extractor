@@ -1,6 +1,6 @@
 import express from 'express';
+import * as cheerio from 'cheerio';
 import { parseDublinCore, parseOpenGraph, parseMicrodata } from 'html-metadata';
-import cheerio from 'cheerio';
 
 const app = express();
 app.use(express.json());
@@ -14,7 +14,7 @@ app.post('/extract', async (req, res) => {
 
   if (!url || typeof url !== 'string' || !url.startsWith('http')) {
     console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
-    return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
+    return res.status(400).json({ error: 'Brakuje poprawnego pola \"url\"' });
   }
 
   try {
@@ -25,7 +25,7 @@ app.post('/extract', async (req, res) => {
     console.log('📄 Długość HTML:', html.length);
     const $ = cheerio.load(html);
 
-    console.log('🔍 Parsuję metadane: DublinCore, OpenGraph, Microdata...');
+    console.log('🔍 Parsuję metadane...');
     const [dc, og, micro] = await Promise.all([
       parseDublinCore($),
       parseOpenGraph($),
