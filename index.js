@@ -1,23 +1,34 @@
 const express = require('express');
-const app = express();
+const metadata = require('html-metadata');
 
-// ZAMIANA: pozwól przyjmować raw tekst
+const app = express();
 app.use(express.text({ type: '*/*' }));
 
 app.post('/extract', async (req, res) => {
+  console.log('--- Żądanie odebrane ---');
+  console.log('RAW BODY:', req.body);
+
   try {
-    const raw = req.body;
-    const parsed = JSON.parse(raw); // <-- ręcznie parsujemy JSON
+    const parsed = JSON.parse(req.body);
     const url = parsed.url;
 
     if (!url || typeof url !== 'string') {
+      console.warn('❗ Niepoprawny URL:', url);
       return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
     }
 
-    const metadata = require('html-metadata');
+    console.log('➡️ Pobieranie metadanych z URL:', url);
     const result = await metadata(url);
+    console.log('✅ Metadane pobrane');
+
     res.json(result);
   } catch (err) {
+    console.error('❌ Błąd przetwarzania:', err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+  console.log(`✅ Schema extractor (html-metadata) działa na porcie ${port}`);
 });
