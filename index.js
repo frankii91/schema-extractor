@@ -1,21 +1,19 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const metadata = require('html-metadata-parser');
+const metadata = require('html-metadata');
 
 const app = express();
-app.use(bodyParser.text({ type: '*/*' }));
+app.use(express.json());
 
 app.post('/extract', async (req, res) => {
-  const html = req.body;
+  const url = req.body.url;
+
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'Brakuje prawidłowego pola "url"' });
+  }
 
   try {
-    const result = await metadata.parseFromString(html);
-    res.json({
-      jsonld: result.jsonld || [],
-      microdata: result.microdata || [],
-      opengraph: result.opengraph || {},
-      general: result.meta || {}
-    });
+    const result = await metadata(url);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
