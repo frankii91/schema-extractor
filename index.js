@@ -35,9 +35,9 @@ app.post('/extract', async (req, res) => {
 
     console.log('🔍 Parsuję metadane...');
     const [dc, og, micro] = await Promise.all([
-      scrape.parseDublinCore($),
-      scrape.parseOpenGraph($),
-      scrape.parseSchemaOrgMicrodata($)
+      scrape.parseDublinCore($).catch(() => null),
+      scrape.parseOpenGraph($).catch(() => null),
+      scrape.parseSchemaOrgMicrodata($).catch(() => null)
     ]);
 
     console.log('✅ Parsowanie zakończone pomyślnie!');
