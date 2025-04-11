@@ -13,5 +13,9 @@ git clone --depth=1 https://github.com/frankii91/schema-extractor.git "$TMP_DIR"
 cp -r "$TMP_DIR"/* /app/
 
 cd /app
+npm install -g npm@latest
 npm install
+npm cache clean --force
+rm -rf /tmp/code
+
 node index.js
