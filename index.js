@@ -3,18 +3,26 @@ import * as cheerio from 'cheerio';
 import { parseDublinCore, parseOpenGraph, parseMicrodata } from 'html-metadata';
 
 const app = express();
-app.use(express.json());
+app.use(express.text({ type: '*/*' }));
 
 app.post('/extract', async (req, res) => {
   console.log('--- ŻĄDANIE ODEBRANE ---');
   console.log('Typ danych:', req.headers['content-type']);
   console.log('Ciało żądania:', req.body);
 
-  const url = req.body?.body?.url;
+  let body;
+  try {
+    const parsed = JSON.parse(req.body);
+    body = parsed.body;
+  } catch {
+    return res.status(400).json({ error: 'Niepoprawny JSON lub struktura' });
+  }
+
+  const url = body?.url;
 
   if (!url || typeof url !== 'string' || !url.startsWith('http')) {
     console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
-    return res.status(400).json({ error: 'Brakuje poprawnego pola \"url\"' });
+    return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
   }
 
   try {
