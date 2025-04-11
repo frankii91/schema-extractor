@@ -1,6 +1,8 @@
 import express from 'express';
 import * as cheerio from 'cheerio';
-import { parseDublinCore, parseOpenGraph, parseMicrodata } from 'html-metadata';
+import htmlMetadata from 'html-metadata';
+
+const { parseDublinCore, parseOpenGraph, parseMicrodata } = htmlMetadata;
 
 const app = express();
 app.use(express.text({ type: '*/*' }));
