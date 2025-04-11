@@ -1,8 +1,6 @@
 import express from 'express';
 import * as cheerio from 'cheerio';
-import htmlMetadata from 'html-metadata';
-
-const { parseDublinCore, parseOpenGraph, parseMicrodata } = htmlMetadata;
+import * as scrape from 'html-metadata';
 
 const app = express();
 app.use(express.text({ type: '*/*' }));
@@ -37,13 +35,13 @@ app.post('/extract', async (req, res) => {
 
     console.log('🔍 Parsuję metadane...');
     const [dc, og, micro] = await Promise.all([
-      parseDublinCore($),
-      parseOpenGraph($),
-      parseMicrodata($)
+      scrape.parseDublinCore($),
+      scrape.parseOpenGraph($),
+      scrape.parseSchemaOrgMicrodata($)
     ]);
 
     console.log('✅ Parsowanie zakończone pomyślnie!');
-    res.json({ dublinCore: dc, opengraph: og, microdata: micro });
+    res.json({ dublinCore: dc, openGraph: og, schemaOrg: micro });
   } catch (err) {
     console.error('❌ Błąd podczas przetwarzania:', err);
     res.status(500).json({ error: err.message || String(err) });
