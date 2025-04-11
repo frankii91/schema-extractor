@@ -34,14 +34,15 @@ app.post('/extract', async (req, res) => {
     const $ = cheerio.load(html);
 
     console.log('🔍 Parsuję metadane...');
-    const [dc, og, micro] = await Promise.all([
+    const [dc, og, micro, all] = await Promise.all([
       scrape.parseDublinCore($).catch(() => null),
       scrape.parseOpenGraph($).catch(() => null),
-      scrape.parseSchemaOrgMicrodata($).catch(() => null)
+      scrape.parseSchemaOrgMicrodata($).catch(() => null),
+      scrape.parseAll($).catch(() => null)
     ]);
 
     console.log('✅ Parsowanie zakończone pomyślnie!');
-    res.json({ dublinCore: dc, openGraph: og, schemaOrg: micro });
+    res.json({ dublinCore: dc, openGraph: og, schemaOrg: micro, parseAll: all, });
   } catch (err) {
     console.error('❌ Błąd podczas przetwarzania:', err);
     res.status(500).json({ error: err.message || String(err) });
