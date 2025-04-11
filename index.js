@@ -10,7 +10,7 @@ app.post('/extract', async (req, res) => {
   console.log('Typ danych:', req.headers['content-type']);
   console.log('Ciało żądania:', req.body);
 
-  const url = req.body?.url;
+  const url = req.body?.body?.url;
 
   if (!url || typeof url !== 'string' || !url.startsWith('http')) {
     console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
