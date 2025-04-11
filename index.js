@@ -15,7 +15,7 @@ app.post('/extract', async (req, res) => {
   let body;
   try {
     const parsed = JSON.parse(req.body);
-    body = parsed.body;
+    body = typeof parsed.body === 'object' ? parsed.body : parsed;
   } catch {
     return res.status(400).json({ error: 'Niepoprawny JSON lub struktura' });
   }
