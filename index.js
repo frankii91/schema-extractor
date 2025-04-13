@@ -15,7 +15,8 @@ app.post('/fetch', async (req, res) => {
   console.log('Ciało żądania:', req.body);
 
   let body;
-  let url;
+  const url = body?.url;
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
   
@@ -26,7 +27,7 @@ app.post('/fetch', async (req, res) => {
     } catch {
       throw { name: 'InvalidJson', message: 'Niepoprawny JSON lub struktura' };
     }
-    url = body?.url;
+    
 
     if (!url || typeof url !== 'string' || !url.startsWith('http')) {
       console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
@@ -90,8 +91,11 @@ app.post('/fetch', async (req, res) => {
 // 🟢 /parse — scrapowanie HTML
 // ==============================
 app.post('/parse', async (req, res) => {
-  const { html, url } = req.body;
-
+  let body;
+ 
+  const html = body?.html;
+  const url = body?.url;
+ 
   try {
     if (!html || typeof html !== 'string') {
       throw { name: 'InvalidHtml', message: 'Brakuje pola "html"' };
