@@ -24,10 +24,13 @@ app.post('/extract', async (req, res) => {
     console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
     return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
   }
-
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  
   try {
     console.log('🌐 Pobieram stronę:', url);
-    const response = await fetch(url);
+     const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
     const html = await response.text();
 
     console.log('📄 Długość HTML:', html.length);
@@ -47,10 +50,30 @@ app.post('/extract', async (req, res) => {
     }]);
   } catch (err) {
     console.error('❌ Błąd podczas przetwarzania:', err);
+    clearTimeout(timeout);
+
+    let errorType = 'UnknownError';
+    let message = err.message || String(err);
+  
+    if (err.name === 'AbortError') {
+      errorType = 'TimeoutError';
+      message = 'Serwer nie odpowiedział w ustalonym czasie.';
+    } else if (message.includes('ENOTFOUND')) {
+      errorType = 'DNSNotFound';
+    } else if (err.name === 'FetchError') {
+      errorType = 'FetchError';
+    } else if (message.includes('invalid url')) {
+      errorType = 'InvalidUrl';
+    } else if (message.includes('ECONNREFUSED')) {
+      errorType = 'NetworkError';
+    }
+    
+  
     res.json([{
       json: {
         success: false,
-        error: err.message || String(err),
+        error: errorType,
+        message,
         url
       }
     }]);
