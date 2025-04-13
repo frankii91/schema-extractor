@@ -41,13 +41,12 @@ app.post('/fetch', async (req, res) => {
       throw { name: 'HttpError', message: `Status ${response.status}`, url };
     }
     
-    const rawHtml = await response.text();
-    console.log('📄 Długość HTML:', rawHtml.length);
-    const html_b64 = Buffer.from(rawHtml, 'utf-8').toString('base64');
-    
+    const html = await response.text();
+    console.log('📄 Długość HTML:', html.length);
+
      res.json({
       success: true,
-      html_b64,
+      html,
       url
     });
   } catch (err) {
@@ -98,6 +97,9 @@ app.post('/parse', async (req, res) => {
 
   let body;
   let url;
+  let html_b64;
+  let html;
+
  
   try {
     try {
@@ -112,10 +114,9 @@ app.post('/parse', async (req, res) => {
       console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
       throw { name: 'InvalidUrl', message: 'Brakuje poprawnego pola "url"', url };
     }
-
-    const html_b64 = body?.html_b64;
-    const html = Buffer.from(html_b64, 'base64').toString('utf-8');
-
+    html_b64 = body?.html_b64;
+    
+    html = Buffer.from(html_b64, 'base64').toString('utf-8');
     if (!html || typeof html !== 'string') {
       throw { name: 'InvalidHtml', message: 'Brakuje pola "html"' };
     }
