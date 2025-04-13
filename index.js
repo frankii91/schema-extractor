@@ -43,10 +43,12 @@ app.post('/fetch', async (req, res) => {
     
     const html = await response.text();
     console.log('📄 Długość HTML:', html.length);
-
-     res.json({
+    
+    const html_b64 = Buffer.from(html, 'utf-8').toString('base64');
+    
+    res.json({
       success: true,
-      html,
+      html_b64,
       url
     });
   } catch (err) {
