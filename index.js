@@ -4,7 +4,7 @@ import * as scrape from 'html-metadata';
 import { AbortController } from 'node-abort-controller';
 
 const app = express();
-app.use(express.text({ type: '*/*' }));
+app.use(express.text({ type: '*/*', limit: '10mb'  }));
 
 // ==============================
 // 🔵 /fetch — pobieranie HTML
