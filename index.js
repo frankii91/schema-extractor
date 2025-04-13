@@ -39,10 +39,21 @@ app.post('/extract', async (req, res) => {
     ]);
 
     console.log('✅ Parsowanie zakończone pomyślnie!');
-    res.json(parseAll);
+    res.json([{
+      json: {
+        success: true,
+        data: parseAll
+      }
+    }]);
   } catch (err) {
     console.error('❌ Błąd podczas przetwarzania:', err);
-    res.status(500).json({ error: err.message || String(err) });
+    res.json([{
+      json: {
+        success: false,
+        error: err.message || String(err),
+        url
+      }
+    }]);
   }
 });
 
