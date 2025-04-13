@@ -4,7 +4,7 @@ import * as scrape from 'html-metadata';
 import { AbortController } from 'node-abort-controller';
 
 const app = express();
-app.use(express.text({ type: '*/*', limit: '10mb'  }));
+app.use(express.text({ type: '*/*', limit: '100mb'  }));
 
 // ==============================
 // 🔵 /fetch — pobieranie HTML
@@ -95,11 +95,12 @@ app.post('/fetch', async (req, res) => {
 app.post('/parse', async (req, res) => {
   console.log('--- ŻĄDANIE ODEBRANE ---');
   console.log('Typ danych:', req.headers['content-type']);
-  console.log('Ciało żądania:', req.body);
+  //console.log('Ciało żądania:', req.body);
 
   let body;
   let url;
- 
+  let html;
+
   try {
     try {
       const parsed = JSON.parse(req.body);
@@ -115,9 +116,18 @@ app.post('/parse', async (req, res) => {
     }
     const html_b64 = body?.html_b64;
     
-    const html = Buffer.from(html_b64, 'base64').toString('utf-8');
+    if (!html_b64 || typeof html_b64 !== 'string') {
+      throw { name: 'InvalidHtmlB64', message: 'Brakuje pola html_b64' };
+    }
+    
+    try {
+      html = Buffer.from(html_b64, 'base64').toString('utf-8');
+    } catch {
+      throw { name: 'InvalidBuffer', message: 'Błąd dekodowania html_b64 do html' };
+    }
+      
     if (!html || typeof html !== 'string') {
-      throw { name: 'InvalidHtml', message: 'Brakuje pola "html"' };
+      throw { name: 'InvalidHtml', message: 'Zdekodowany HTML jest pusty lub nieczytelny' };
     }
 
     const $ = cheerio.load(html);
@@ -158,7 +168,7 @@ app.post('/parse', async (req, res) => {
 app.post('/extract', async (req, res) => {
   console.log('--- ŻĄDANIE ODEBRANE ---');
   console.log('Typ danych:', req.headers['content-type']);
-  console.log('Ciało żądania:', req.body);
+ // console.log('Ciało żądania:', req.body);
 
   let body;
   let url
