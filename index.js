@@ -97,9 +97,6 @@ app.post('/parse', async (req, res) => {
 
   let body;
   let url;
-  let html_b64;
-  let html;
-
  
   try {
     try {
@@ -114,9 +111,9 @@ app.post('/parse', async (req, res) => {
       console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
       throw { name: 'InvalidUrl', message: 'Brakuje poprawnego pola "url"', url };
     }
-    html_b64 = body?.html_b64;
+    const html_b64 = body?.html_b64;
     
-    html = Buffer.from(html_b64, 'base64').toString('utf-8');
+    const html = Buffer.from(html_b64, 'base64').toString('utf-8');
     if (!html || typeof html !== 'string') {
       throw { name: 'InvalidHtml', message: 'Brakuje pola "html"' };
     }
