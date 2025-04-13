@@ -11,41 +11,42 @@ app.post('/extract', async (req, res) => {
   console.log('Ciało żądania:', req.body);
 
   let body;
-  try {
-    const parsed = JSON.parse(req.body);
-    body = typeof parsed.body === 'object' ? parsed.body : parsed;
-  } catch {
-    return res.status(400).json({ error: 'Niepoprawny JSON lub struktura' });
-  }
-
-  const url = body?.url;
-
-  if (!url || typeof url !== 'string' || !url.startsWith('http')) {
-    console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
-    return res.status(400).json({ error: 'Brakuje poprawnego pola "url"' });
-  }
+  
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
   
   try {
+    try {
+      const parsed = JSON.parse(req.body);
+      body = typeof parsed.body === 'object' ? parsed.body : parsed;
+    } catch {
+      throw { name: 'InvalidJson', message: 'Niepoprawny JSON lub struktura' };
+    }
+    const url = body?.url;
+
+    if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+      console.warn('❗ Niepoprawne lub brakujące pole "url":', url);
+      throw { name: 'InvalidUrl', message: 'Brakuje poprawnego pola "url"', url };
+    }
     console.log('🌐 Pobieram stronę:', url);
-     const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
+    
     const html = await response.text();
-
     console.log('📄 Długość HTML:', html.length);
-    const $ = cheerio.load(html);
 
+    const $ = cheerio.load(html);
     console.log('🔍 Parsuję metadane...');
-    const [parseAll] = await Promise.all([
-      scrape.parseAll($).catch(() => null)
-    ]);
+    const parseAll = await scrape.parseAll($).catch(() => {
+      throw { name: 'ParseError', message: 'Nie udało się sparsować metadanych' };
+    });
 
     console.log('✅ Parsowanie zakończone pomyślnie!');
     res.json([{
       json: {
         success: true,
-        data: parseAll
+        data: parseAll,
+        url
       }
     }]);
   } catch (err) {
